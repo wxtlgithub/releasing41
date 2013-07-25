@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- systemconfig.xml配置操作类 -->
+	<bean id="systemconfigFileOper" class="com.lxt2.clumped.systemconfig.SystemconfigFile" init-method="init">
+		<!-- SysConfigHelper注入 -->
+		<property name="sysConfigHelper" ref="sysconfighelper" />
+		<!-- 配置临时备份存储路径 -->
+		<property name="cfgXmlSavePath" value="${WORKDIR}../../../data/config_store/"/>
+		<!-- 配置文件路径 -->
+		<property name="configXmlPathBase" value="${WORKDIR}WEB-INF/classes"/>
+		<!-- cmd -->
+		<property name="cmd" value="-U{0} -F{1} -Cgetsystemconfig -P${nodeID}"/> 
+	</bean>
+	
+	<!-- load xml config  -->
+	<bean id="loadXmlConfigCmd" class="com.lxt2.clumped.systemconfig.LoadXmlConfigCmd">
+		<property name="syscfgFile" ref="systemconfigFileOper"/>
+	</bean>
+	
+	<!-- view systemconfig cmd -->
+	<bean id="viewSysemconfigCmd" class="com.lxt2.clumped.systemconfig.ViewXmlConfigCmd">
+		<property name="syscfgFile" ref="systemconfigFileOper"/>
+	</bean>
+	
+	<!-- load nodelist cmd test -->
+	<bean id="loadNodeListCmd" class="com.lxt2.clumped.systemconfig.LoadNodeList2MemoryCmd">
+		<property name="syscfgFile" ref="systemconfigFileOper"/>
+	</bean>
+	
+	<!-- goback -->
+	<bean id="GoBackConfigCmd" class="com.lxt2.clumped.systemconfig.GoBackConfigCmd">
+			<property name="syscfgFile" ref="systemconfigFileOper"/>
+	</bean>
+	
+	
+	<!-- 
+	<bean id="loadNodeListTask" class="com.lxt2.clumped.systemconfig.LoadNodeList2MemoryTask">
+		<property name="id" value="8888"/>
+		<property name="name" value="NodeListLoad"/>
+		<property name="syscfgFile" ref="systemconfigFileOper"/>
+		<property name="commandMap">
+			<map>
+				<entry key="sync" value-ref="loadNodeListCmd"/>
+			</map>
+		</property>
+	</bean>
+	<bean id="GoBackConfigTask" class="com.lxt2.clumped.systemconfig.GoBackConfigTask">
+          <property name="id" value="7777"/>
+          <property name="name" value="GoBack"/>
+          <property name="syscfgFile" ref="systemconfigFileOper"/>
+          <property name="commandMap">
+	          <map>
+	          	<entry key="sync" value-ref="GoBackConfigCmd"/>
+	          </map>
+          </property>
+	 </bean>
+	  -->
+	 
+
+</beans>

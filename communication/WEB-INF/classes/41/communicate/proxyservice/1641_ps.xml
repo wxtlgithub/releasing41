@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="psTimerListener1641" class="com.lxt2.proxyservice.TimerSubmitListener">
+		<property name="module" ref="psModule1641" />
+	</bean>
+	<bean id="psTimerQueue1641" class="com.lxt2.queuekc.CacheQueue">
+		<property name="cache">
+			<bean class="ihandy.lxt20.persist.cache.TsCache" destroy-method="close" />
+		</property>
+		<property name="queueName" value="mtTimer1641" />
+		<property name="listener" ref="psTimerListener1641" />
+	</bean>
+	<bean id="psCounterService1641" class="com.lxt2.proxyservice.ClientCounterService"
+		init-method="init" destroy-method="destroy" />
+	<bean id="psThroughputStrategy1641" class="com.lxt2.proxyservice.throughput.SubmitTpStrategyDef">
+		<property name="verifyService" ref="ndClientVerify" />
+		<property name="counterService" ref="psCounterService1641" />
+	</bean>
+
+	<bean id="psCacheQueue1641" class="com.lxt2.queuekc.CacheQueue">
+		<property name="cache">
+			<bean class="ihandy.lxt20.persist.cache.Priority" destroy-method="close" />
+		</property>
+		<property name="queueName" value="moSend1641" />
+		<property name="listener" ref="psMoProcessListener1641" />
+	</bean>
+	<bean id="psBackQueue1641" class="com.lxt2.queuekc.TruncateCacheQueue">
+		<property name="cache">
+			<bean class="ihandy.lxt20.persist.cache.TruncateQueue"
+				destroy-method="destroy">
+				<property name="path" value="${WORKDIR}../../../data/psmo1641" />
+			</bean>
+		</property>
+		<property name="queueName" value="moSendBack1641" />
+	</bean>
+	<bean id="psMoController1641" class="com.lxt2.proxyservice.MoController">
+		<property name="controlWindowSize" value="10" />
+		<property name="clearTimeOut" value="60000" />
+		<property name="clearSleepTime" value="60000" />
+		<property name="module" ref="psModule1641" />
+		<property name="queue" ref="psBackQueue1641" />
+		<property name="countService" ref="psCountService1641" />
+		<property name="sendType" value="false"/>
+	</bean>
+	<bean id="psDeliverFilter1641" class="com.lxt2.proxyservice.filter.SendDeliverFilter">
+		<property name="csService" ref="psClientSessionService1641" />
+		<property name="moController" ref="psMoController1641" />
+		<property name="queue" ref="psBackQueue1641" />
+	</bean>
+	<bean id="psReportFilter1641" class="com.lxt2.proxyservice.filter.SendReportFilter">
+		<property name="csService" ref="psClientSessionService1641" />
+		<property name="moController" ref="psMoController1641" />
+		<property name="queue" ref="psBackQueue1641" />
+	</bean>
+	<bean id="psMoProcessListener1641" class="com.lxt2.proxyservice.MoProcessListener">
+		<property name="module" ref="psModule1641" />
+		<property name="countService" ref="psCountService1641" />
+		<property name="verifyService" ref="ndClientVerify" />
+		<!-- 超时时间  依赖注入 默认72小时 -->
+		<property name="timeOut" value="72"/>
+		<property name="errMap">
+			<map>
+				<entry key="-7" value="-7" />
+				<entry key="-13" value="-13" />
+			</map>
+		</property>
+		<property name="filters">
+			<list>
+				<ref bean="psReportFilter1641" />
+				<ref bean="psDeliverFilter1641" />
+			</list>
+		</property>
+	</bean>
+	<bean id="psBackupResend1641" class="com.lxt2.proxyservice.BackUpResendRunnable">
+		<property name="module" ref="psModule1641" />
+		<property name="queue" ref="psBackQueue1641" />
+		<property name="countService" ref="psCountService1641" />
+		<property name="verifyService" ref="ndClientVerify" />
+		<!-- 超时时间  依赖注入 默认72小时 -->
+		<property name="timeOut" value="72"/>
+		<property name="errMap">
+			<map>
+				<entry key="-7" value="-7" />
+				<entry key="-13" value="-13" />
+			</map>
+		</property>
+		<property name="filters">
+			<list>
+				<ref bean="psReportFilter1641" />
+				<ref bean="psDeliverFilter1641" />
+			</list>
+		</property>
+	</bean>
+</beans>
